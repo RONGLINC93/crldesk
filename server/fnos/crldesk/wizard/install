@@ -1,0 +1,23 @@
+[
+  {
+    "stepTitle": "欢迎安装 crldesk 远程控制",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "🖥️ <b>crldesk</b> 是一款远程控制服务端，负责客户端之间的信令与中转，并托管跨平台 Web 客户端。"
+      },
+      {
+        "type": "tips",
+        "helpText": "🌐 <b>连接方式：</b>支持 IPv4 / IPv6 / 飞牛 FN Connect 域名（如 desk.myfnas.com）。"
+      },
+      {
+        "type": "tips",
+        "helpText": "📱 <b>使用方法：</b>安装完成后，浏览器访问 <code>http://NAS_IP:5555</code>，填写唯一 ID 即可作为被控端或主控端。"
+      },
+      {
+        "type": "tips",
+        "helpText": "💡 <b>被控端真实控制：</b>在需要被控制的电脑上另运行原生代理（agent），方可真正注入鼠标/键盘。"
+      }
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+﻿appname=crldesk
+version=1.0.0
+display_name=crldesk 远程控制
+desc=远程控制服务端（独立部署）：信令/中转 + 服务端管理面板，支持 IPv4/IPv6/FN Connect 连接；客户端为独立程序
+platform=x86
+source=thirdparty
+maintainer=CRL
+distributor=CRL
+os_min_version=0.9.0
+desktop_uidir=ui
+desktop_applaunchname=crldesk.Application
+service_port=5555
+install_dep_apps=nodejs_v20
+ctl_stop=true
+checkport=true
+disable_authorization_path=false

@@ -1,0 +1,47 @@
+{
+  "name": "crldesk-client",
+  "version": "1.0.0",
+  "description": "crldesk 远程控制 Windows 桌面客户端",
+  "main": "main.js",
+  "author": "CRL",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.crldesk.client",
+    "productName": "crldesk",
+    "copyright": "crldesk",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js"
+    ],
+    "extraResources": [
+      { "from": "../web", "to": "web" },
+      { "from": "../agent/platform", "to": "agent/platform" }
+    ],
+    "win": {
+      "target": ["portable", "nsis"]
+    },
+    "portable": {
+      "artifactName": "crldesk-portable-${version}.exe"
+    },
+    "nsis": {
+      "artifactName": "crldesk-setup-${version}.exe",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

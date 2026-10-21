@@ -1,0 +1,18 @@
+{
+  "name": "crldesk-server",
+  "version": "1.0.0",
+  "description": "crldesk 远程控制软件 - 服务端（信令/中转服务器 + 静态客户端托管）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT"
+}

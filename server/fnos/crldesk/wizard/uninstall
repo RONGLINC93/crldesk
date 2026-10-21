@@ -1,0 +1,11 @@
+[
+  {
+    "stepTitle": "卸载 crldesk",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "卸载将停止 crldesk 服务并移除应用文件。如有需要请提前备份数据。"
+      }
+    ]
+  }
+]

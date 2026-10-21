@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>crldesk 远程控制</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">crldesk<span class="ver">远程控制</span></div>
+    <div class="conn">
+      <details class="server-cfg">
+        <summary>服务端设置</summary>
+        <div class="server-cfg-body">
+          <input id="serverUrl" placeholder="服务端地址，如 192.168.1.10 或 crldesk.你的FNID.5ddd.com" size="32" />
+          <span class="hint">只需填地址，不用写端口：局域网/公网 IP 默认 5555，FN Connect 三级域名（应用名.FNID.5ddd.com）自动走 443；自定义端口可写 192.168.1.10:8080</span>
+          <input id="displayName" placeholder="显示名称 (可选)" size="14" />
+        </div>
+      </details>
+      <span id="status" class="status off">未连接</span>
+      <button id="btnConnect" class="ghost">连接</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左栏：本机（被控端） -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>本机</h2>
+        <span id="hostState" class="badge off">等待连接</span>
+      </div>
+
+      <div class="field">
+        <label>设备码</label>
+        <div class="value-row">
+          <span class="big" id="peerId">—</span>
+          <button id="btnCopyId" class="ghost" title="复制设备码">复制</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>连接密码</label>
+        <div class="value-row">
+          <input class="big-input" id="hostPassword" maxlength="16" placeholder="密码" />
+          <button id="btnCopyPassword" class="ghost" title="复制密码">复制</button>
+          <button id="btnRandomPassword" class="ghost" title="生成随机密码">随机</button>
+        </div>
+      </div>
+
+      <div class="field row">
+        <button id="btnStopShare" class="ghost">停止共享</button>
+        <label class="chk"><input type="checkbox" id="useAgent" checked /> 注入真实输入</label>
+      </div>
+
+      <details class="adv">
+        <summary>高级设置</summary>
+        <div class="adv-body">
+          <label class="chk">FN Connect 域名：<input id="hostFnDomain" placeholder="如 desk.myfnas.com" size="22" /></label>
+          <div class="row">
+            <button id="btnHostClipboard" class="ghost">发送剪贴板给主控端</button>
+          </div>
+          <div class="muted small">在线设备：<span id="hostPeerList">-</span></div>
+        </div>
+      </details>
+    </section>
+
+    <!-- 右栏：远程控制（主控端） -->
+    <section class="panel grow">
+      <div class="panel-head">
+        <h2>远程控制</h2>
+        <span id="ctrlState" class="badge off">未连接</span>
+      </div>
+
+      <div class="connect-row">
+        <input id="targetId" placeholder="对方设备码 或 FN Connect 域名" />
+        <input id="targetPassword" placeholder="对方密码" maxlength="16" />
+        <button id="btnInvite" class="primary">连接</button>
+        <button id="btnDisconnect" class="ghost">断开</button>
+      </div>
+
+      <div class="toolbar">
+        <button id="btnFull" class="ghost">全屏</button>
+        <button id="btnQuality" class="ghost">画质: 自动</button>
+        <button id="btnClipboard" class="ghost">同步剪贴板</button>
+        <button id="btnKeyboard" class="ghost">软键盘</button>
+        <button id="btnCtrlAltDel" class="ghost">Ctrl+Alt+Del</button>
+        <span class="muted" id="statLatency"></span>
+      </div>
+
+      <div id="videoWrap" class="video-wrap">
+        <img id="remoteVideo" alt="远程画面" />
+        <div id="overlay" class="overlay hidden"></div>
+        <div id="waiting" class="waiting">输入对方设备码与密码后点击「连接」</div>
+      </div>
+
+      <div id="softKeyboard" class="soft-kb hidden">
+        <div class="row">
+          <button data-k="Ctrl">Ctrl</button><button data-k="Alt">Alt</button>
+          <button data-k="Shift">Shift</button><button data-k="Win">Win</button>
+          <button data-k="Esc">Esc</button><button data-k="Tab">Tab</button>
+          <button data-k="Del">Del</button><button data-k="Backspace">⌫</button>
+          <button data-k="Enter">Enter</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/net.js"></script>
+  <script src="js/host.js"></script>
+  <script src="js/controller.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

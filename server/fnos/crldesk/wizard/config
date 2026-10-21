@@ -1,0 +1,27 @@
+[
+  {
+    "stepTitle": "crldesk 配置",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "服务默认监听 5555 端口。如需修改，请在应用的环境变量中设置 PORT（需重启应用）。"
+      },
+      {
+        "type": "tips",
+        "helpText": "客户端连接服务端：填 <code>NAS内网IP</code>、<code>公网IPv6</code>、隧道地址（如 frp 的 <code>xxx:12345</code>），或 FN Connect 应用三级域名 <code>crldesk.你的FNID.5ddd.com</code>（走 443）即可，无需写端口（默认 5555 / https 默认 443）。"
+      },
+      {
+        "type": "tips",
+        "helpText": "FN Connect 需在 fnOS 中为该应用开启远程访问（应用设置里的远程访问开关），否则访问三级域名会提示「FN Connect 暂无权限访问该服务」。二级域名 <code>你的FNID.5ddd.com</code> 是 NAS 入口选择页，不能给客户端当连接地址。"
+      },
+      {
+        "type": "tips",
+        "helpText": "FN Connect 域名可在 fnOS 桌面的「FN Connect / 远程访问」中查看。如需让管理面板显示完整的 FN Connect 连接地址，请设置应用环境变量 FN_CONNECT_DOMAIN（需重启应用）。"
+      },
+      {
+        "type": "tips",
+        "helpText": "客户端为独立程序，不包含在本服务内：Windows 可运行 <code>client\\run-client.bat</code>（或用 Electron 客户端 exe），Linux/macOS 可执行 <code>node client/web/serve.js</code>。在客户端「服务端设置」中填入上述任一服务端地址即可连接。"
+      }
+    ]
+  }
+]

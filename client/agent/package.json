@@ -1,0 +1,16 @@
+{
+  "name": "crldesk-agent",
+  "version": "1.0.0",
+  "description": "crldesk 原生 Host 代理：在本机注入真实鼠标/键盘输入（Windows/Linux/macOS）",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT"
+}

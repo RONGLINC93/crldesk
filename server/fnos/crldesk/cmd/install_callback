@@ -1,0 +1,3 @@
+#!/bin/bash
+# 安装完成回调（fnOS 调用）
+exit 0

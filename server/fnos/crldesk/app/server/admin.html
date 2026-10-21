@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>crldesk 服务端管理</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel2: #273449;
+    --line: #33415a;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.6 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header h1 small { color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
+  .dot.off { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+  .spacer { flex: 1; }
+  .refresh { color: var(--muted); font-size: 12px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card .label { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .card .value { font-size: 22px; font-weight: 600; }
+  .card .value.small { font-size: 13px; font-weight: 400; word-break: break-all; }
+  .chip { display: inline-block; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; margin: 2px 4px 2px 0; font-size: 12px; color: var(--accent); font-family: Consolas, monospace; }
+  .conn { display: flex; gap: 8px; align-items: baseline; margin: 3px 0; font-size: 13px; }
+  .conn .way { color: var(--muted); font-size: 12px; flex: none; width: 68px; }
+  .conn .url { font-family: Consolas, monospace; color: var(--accent); word-break: break-all; }
+  .conn .url.placeholder { color: var(--muted); }
+  .conn .url.placeholder b { color: var(--warn); font-weight: 500; }
+
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+  section > h2 { font-size: 15px; font-weight: 600; padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  section > h2 .count { color: var(--muted); font-size: 12px; font-weight: 400; }
+
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th { text-align: left; color: var(--muted); font-weight: 500; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--panel2); }
+  .table td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .table tr:last-child td { border-bottom: none; }
+  .table .mono { font-family: Consolas, monospace; color: var(--accent); }
+  .table .sub { color: var(--muted); font-size: 12px; }
+
+  .role { display: inline-block; border-radius: 5px; padding: 0 8px; font-size: 12px; }
+  .role.host { background: rgba(56,189,248,.15); color: var(--accent); }
+  .role.controller { background: rgba(52,211,153,.15); color: var(--ok); }
+  .role.client { background: rgba(148,163,184,.15); color: var(--muted); }
+
+  .session { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .session:last-child { border-bottom: none; }
+  .session .arrow { color: var(--warn); font-weight: 700; }
+  .session .who { font-weight: 600; }
+  .session .who .mono { font-weight: 400; }
+  .session .meta { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  .btn {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 3px 12px; font-size: 12px; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--danger); color: var(--danger); }
+
+  .empty { padding: 26px 16px; text-align: center; color: var(--muted); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="dot" id="dot"></span>
+    <h1>crldesk 服务端管理<small id="ver"></small></h1>
+    <div class="spacer"></div>
+    <div class="refresh" id="uptime">--</div>
+  </header>
+
+  <div class="cards">
+    <div class="card">
+      <div class="label">在线客户端</div>
+      <div class="value" id="peerCount">-</div>
+    </div>
+    <div class="card">
+      <div class="label">进行中的控制会话</div>
+      <div class="value" id="sessionCount">-</div>
+    </div>
+    <div class="card">
+      <div class="label">监听端口</div>
+      <div class="value" id="port">-</div>
+    </div>
+    <div class="card">
+      <div class="label">客户端连接方式（IPv4 / IPv6 / FN Connect）</div>
+      <div class="value small" id="addrs">-</div>
+    </div>
+  </div>
+
+  <section>
+    <h2>控制会话 <span class="count" id="sessionHint"></span></h2>
+    <div id="sessions"><div class="empty">暂无控制会话</div></div>
+  </section>
+
+  <section>
+    <h2>已连接的客户端 <span class="count" id="peerHint"></span></h2>
+    <div id="peers"><div class="empty">暂无客户端连接</div></div>
+  </section>
+
+  <footer>本页为服务端管理面板（仅查看/管理，不含客户端功能）。客户端为独立程序：在客户端「服务端地址」中填入下列任一地址连接。</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var startedAt = 0;
+  var lastData = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function two(n) { return (n < 10 ? '0' : '') + n; }
+  function fmtTime(ts) {
+    if (!ts) return '-';
+    var d = new Date(ts);
+    return two(d.getHours()) + ':' + two(d.getMinutes()) + ':' + two(d.getSeconds());
+  }
+  function fmtDur(ms) {
+    if (ms == null || ms < 0) return '-';
+    var s = Math.floor(ms / 1000);
+    if (s < 10) return s + ' 秒';
+    var d = Math.floor(s / 86400); s -= d * 86400;
+    var h = Math.floor(s / 3600); s -= h * 3600;
+    var m = Math.floor(s / 60); s -= m * 60;
+    var out = '';
+    if (d) out += d + ' 天 ';
+    if (h) out += h + ' 小时 ';
+    if (m) out += m + ' 分 ';
+    out += s + ' 秒';
+    return out;
+  }
+  function fmtBytes(b) {
+    if (!b) return '0 B';
+    var u = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var i = 0;
+    while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+    return (i === 0 ? b : b.toFixed(1)) + ' ' + u[i];
+  }
+  function ago(ts) {
+    if (!ts) return '-';
+    var s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 0) s = 0;
+    if (s < 60) return s + ' 秒前';
+    if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
+    return Math.floor(s / 3600) + ' 小时前';
+  }
+  function roleBadge(role) {
+    var map = { host: ['host', '被控端 Host'], controller: ['controller', '主控端'] };
+    var m = map[role] || ['client', '客户端'];
+    return '<span class="role ' + m[0] + '">' + esc(m[1]) + '</span>';
+  }
+  function nameOf(p) {
+    return esc(p.name || p.peerId) + ' <span class="sub mono">' + esc(p.peerId || '') + '</span>';
+  }
+
+  function renderTop(st) {
+    document.getElementById('ver').textContent = st.version ? ('v' + st.version) : '';
+    document.getElementById('dot').className = 'dot';
+    document.getElementById('peerCount').textContent = st.peerCount;
+    document.getElementById('sessionCount').textContent = st.sessions.length;
+    document.getElementById('port').textContent = st.port + (st.host === '::' ? '（IPv4+IPv6 双栈）' : '');
+
+    var lines = [];
+    (st.addresses.ipv4 || []).forEach(function (a) {
+      lines.push('<div class="conn"><span class="way">IPv4</span><span class="url">http://' + esc(a) + ':' + st.port + '</span></div>');
+    });
+    (st.addresses.ipv6 || []).forEach(function (a) {
+      lines.push('<div class="conn"><span class="way">IPv6</span><span class="url">http://[' + esc(a) + ']:' + st.port + '</span></div>');
+    });
+    if (st.fnConnectDomain) {
+      lines.push('<div class="conn"><span class="way">FN Connect</span><span class="url">http://' + esc(st.fnConnectDomain) + ':' + st.port + '</span></div>');
+    } else {
+      lines.push('<div class="conn"><span class="way">FN Connect</span><span class="url placeholder">http://<b>&lt;你的FN域名&gt;</b>:' + st.port + '（未配置环境变量 FN_CONNECT_DOMAIN）</span></div>');
+    }
+    document.getElementById('addrs').innerHTML = lines.length
+      ? lines.join('')
+      : '-';
+    document.getElementById('peerHint').textContent = '共 ' + st.peers.length + ' 个';
+    document.getElementById('sessionHint').textContent = '画面与输入正经服务端中转';
+  }
+
+  function renderSessions(st) {
+    var box = document.getElementById('sessions');
+    if (!st.sessions.length) { box.innerHTML = '<div class="empty">暂无控制会话</div>'; return; }
+    box.innerHTML = st.sessions.map(function (s) {
+      return '<div class="session">'
+        + '<span class="who">' + esc(s.hostName || s.hostId) + ' <span class="sub mono">' + esc(s.hostId) + '</span></span>'
+        + '<span class="arrow">画面 / 输入 ⇄</span>'
+        + '<span class="who">' + esc(s.controllerName || s.controllerId) + ' <span class="sub mono">' + esc(s.controllerId) + '</span></span>'
+        + '<span class="meta">自 ' + fmtTime(s.since) + ' · ' + fmtDur(s.since ? Date.now() - s.since : null)
+        + ' · ' + s.frames + ' 帧 · ' + fmtBytes(s.bytes) + '</span>'
+        + '</div>';
+    }).join('');
+  }
+
+  function renderPeers(st) {
+    var box = document.getElementById('peers');
+    if (!st.peers.length) { box.innerHTML = '<div class="empty">暂无客户端连接</div>'; return; }
+
+    // 反查：谁正在向该客户端推流（该客户端作为主控端正在观看谁）
+    var watching = {};
+    st.sessions.forEach(function (s) { watching[s.controllerId] = s; });
+    var shareName = {};
+    st.peers.forEach(function (p) { shareName[p.peerId] = (p.name || p.peerId) + ' (' + p.peerId + ')'; });
+
+    var rows = st.peers.map(function (p) {
+      var rel = '';
+      if (watching[p.peerId]) {
+        rel = '正在观看 <b>' + esc(shareName[watching[p.peerId].hostId] || watching[p.peerId].hostId) + '</b>';
+      } else if (p.sharingTo) {
+        rel = '正在被 <b>' + esc(shareName[p.sharingTo] || p.sharingTo) + '</b> 控制';
+      }
+      var ips = [];
+      if (p.ipv4) ips.push('<span class="mono">' + esc(p.ipv4) + '</span>');
+      if (p.ipv6) ips.push('<span class="mono">' + esc(p.ipv6) + '</span>');
+      var fns = p.fnDomains && p.fnDomains.length
+        ? p.fnDomains.map(function (d) { return '<span class="chip">' + esc(d) + '</span>'; }).join('')
+        : '<span class="sub">-</span>';
+      return '<tr>'
+        + '<td>' + nameOf(p) + '</td>'
+        + '<td>' + roleBadge(p.role) + '</td>'
+        + '<td>' + (ips.join('<br>') || '<span class="sub">-</span>') + '</td>'
+        + '<td>' + fns + '</td>'
+        + '<td>' + fmtTime(p.connectedAt) + '<div class="sub">' + fmtDur(p.connectedAt ? Date.now() - p.connectedAt : null) + '</div></td>'
+        + '<td>' + ago(p.lastSeen) + '</td>'
+        + '<td>' + (rel || '<span class="sub">空闲</span>') + '</td>'
+        + '<td><button class="btn" data-kick="' + esc(p.peerId) + '">断开</button></td>'
+        + '</tr>';
+    }).join('');
+
+    box.innerHTML = '<table class="table"><thead><tr>'
+      + '<th>客户端</th><th>角色</th><th>IP 地址</th><th>FN 域名</th><th>连接于</th><th>最近活动</th><th>会话</th><th>操作</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+
+    Array.prototype.forEach.call(box.querySelectorAll('button[data-kick]'), function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-kick');
+        if (!confirm('确定断开客户端 ' + id + ' ？其进行中的控制会话也会结束。')) return;
+        btn.disabled = true;
+        fetch('/api/admin/kick', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ peerId: id })
+        }).then(function (r) { return r.json(); })
+          .then(function (j) { if (!j.ok) alert('断开失败：' + (j.error || '未知错误')); load(); })
+          .catch(function (e) { alert('断开失败：' + e.message); load(); });
+      });
+    });
+  }
+
+  function render() {
+    var el = document.getElementById('uptime');
+    if (startedAt) {
+      el.textContent = '已运行 ' + fmtDur(Date.now() - startedAt) + ' · 每 2 秒自动刷新';
+    }
+  }
+
+  function load() {
+    fetch('/api/admin/status').then(function (r) { return r.json(); }).then(function (st) {
+      if (!st || !st.ok) return;
+      lastData = st;
+      startedAt = st.startedAt;
+      renderTop(st);
+      renderSessions(st);
+      renderPeers(st);
+      render();
+    }).catch(function () {
+      document.getElementById('dot').className = 'dot off';
+      document.getElementById('uptime').textContent = '无法连接服务端，正在重试…';
+    });
+  }
+
+  setInterval(render, 1000);   // 秒级走表（本地计算）
+  setInterval(load, 2000);     // 数据轮询
+  load();
+})();
+</script>
+</body>
+</html>
