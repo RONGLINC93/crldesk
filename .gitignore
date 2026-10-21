@@ -3,8 +3,9 @@
 .env.*
 !.env.example
 
-# 依赖（所有 node_modules，无论位于哪个目录）
-node_modules/
+# node_modules 已按需求纳入版本库（不再忽略）
+# 例外：electron 运行时二进制超过 GitHub 单文件 100MB 上限，必须排除
+client/electron/node_modules/electron/dist/
 
 # 构建产物（fpk 输出目录在 server/ 下）
 server/fpk/
